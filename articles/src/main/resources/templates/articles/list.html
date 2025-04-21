@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Articles List</title>
+  <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+  <h1>Articles</h1>
+  <a th:href="@{/articles/create}" class="btn btn-primary mb-3">Add New Article</a>
+
+  <div class="row">
+    <div th:each="article : ${articles}" class="col-md-4 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title" th:text="${article.title}">Title</h5>
+          <p class="card-text" th:text="${article.description}">Description</p>
+          <div class="d-flex justify-content-between">
+            <a th:href="@{/articles/{id}(id=${article.id})}" class="btn btn-sm btn-outline-primary">Read</a>
+            <span class="text-muted" th:text="${#dates.format(article.created_at, 'dd MMM yyyy')}">Date</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
