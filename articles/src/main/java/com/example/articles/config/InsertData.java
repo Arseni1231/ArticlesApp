@@ -1,6 +1,7 @@
 package com.example.articles.config;
 
 import com.example.articles.models.Article;
+import com.example.articles.models.Roles;
 import com.example.articles.models.Tag;
 import com.example.articles.models.User;
 import com.example.articles.repositories.ArticleRepository;
@@ -8,6 +9,7 @@ import com.example.articles.repositories.TagRepository;
 import com.example.articles.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import com.github.javafaker.Faker;
 
@@ -30,14 +32,34 @@ public class InsertData implements CommandLineRunner {
         this.userRepository = userRepository;
         this.articleRepository = articleRepository;
         this.tagRepository = tagRepository;
+
     }
 
     @Override
-    @Transactional
+
     public void run(String... args) throws Exception {
         seedUsers();
         seedTags();
         seedArticles();
+        User admin =new User();
+        admin.setCreated_at(LocalDateTime.now());
+        admin.setEmail("admin@gmail.com");
+        admin.setImage_url("https://example.com/image.png");
+        admin.setUsername("admin");
+        admin.setPassword(new BCryptPasswordEncoder().encode("admin"));
+        admin.setBio("admin bio");
+        admin.setRole(Roles.ROLE_ADMIN);
+        userRepository.save(admin);
+
+        User user =new User();
+        user.setCreated_at(LocalDateTime.now());
+        user.setEmail(faker.internet().emailAddress());
+        user.setUsername(faker.name().username());
+        user.setPassword(new BCryptPasswordEncoder().encode("admin"));
+        user.setBio(faker.lorem().paragraph());
+        user.setImage_url(faker.internet().url());
+        user.setRole(Roles.ROLE_USER);
+        userRepository.save(user);
     }
 
     private void seedUsers() {
@@ -54,7 +76,7 @@ public class InsertData implements CommandLineRunner {
     }
 
     private void seedTags() {
-        List<String> tagNames = List.of("Technology", "Science", "Programming", "AI", "Writting");
+        List<String> tagNames = List.of("C++", "Java", "Python", "Ruby", "JavaScript");
         for (String tagName : tagNames) {
             Tag tag = new Tag();
             tag.setName(tagName);

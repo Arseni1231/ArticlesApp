@@ -11,17 +11,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
-public class Security{
+public class SecurityConfig {
 
     private final UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @Bean
-    public Security(UserService userService, BCryptPasswordEncoder passwordEncoder) {
+    @Autowired
+    public SecurityConfig(UserService userService, BCryptPasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -31,7 +30,6 @@ public class Security{
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Публичные endpoints
                         .requestMatchers(
                                 "/",
                                 "/register",
@@ -39,23 +37,23 @@ public class Security{
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/users/register",
+                                "/api/public/**"
                         ).permitAll()
-
-                        // Users endpoints
-                        .requestMatchers("/users/register").permitAll()
-                        .requestMatchers("/users/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/users", "/users/*/delete").hasRole("ADMIN")
-
-                        // Articles endpoints
-                        .requestMatchers("/articles").permitAll()
-                        .requestMatchers("/articles/create", "/articles/*/edit").authenticated()
-                        .requestMatchers("/articles/*/delete").hasRole("ADMIN")
-
-                        // API endpoints (если есть)
-                        .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/api/**").authenticated()
-
+                        .requestMatchers(
+                                "/articles/create",
+                                "/articles/*/edit",
+                                "/api/**"
+                        ).authenticated()
+                        .requestMatchers(
+                                "/users/**"
+                        ).hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(
+                                "/users",
+                                "/users/*/delete",
+                                "/articles/*/delete"
+                        ).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -64,7 +62,7 @@ public class Security{
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                        .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 );

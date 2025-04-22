@@ -70,7 +70,7 @@ public class ArticleService implements IArticleService {
         articleRepository.deleteById(id);
     }
 
-    private String generateSlug(String title) {
+    public String generateSlug(String title) {
         return title.toLowerCase()
                 .replaceAll("[^a-z0-9 ]", "")
                 .replaceAll("\\s+", "-");
